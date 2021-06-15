@@ -1,9 +1,9 @@
-% »ùÓÚEKFµÄIMU×ËÌ¬½âËã(ADIS16470)
-% µ¼º½×ø±ê£º¶«±±Ìì×ø±êÏµ(ENU)
-% ADIS16470ÔØÌå×ø±êÏµ:X:ÓÒ; Y:Ç°; Z:ÉÏ ,ÄæÊ±ÕëÅ·À­½Ç½Ç¶ÈÎªÕı
+% åŸºäºEKFçš„IMUå§¿æ€è§£ç®—(ADIS16470)
+% å¯¼èˆªåæ ‡ï¼šä¸œåŒ—å¤©åæ ‡ç³»(ENU)
+% ADIS16470è½½ä½“åæ ‡ç³»:X:å³; Y:å‰; Z:ä¸Š ,é€†æ—¶é’ˆæ¬§æ‹‰è§’è§’åº¦ä¸ºæ­£
 % X:pitch; Y:roll; Z:yaw;
-% Ğı×ªË³Ğò£ºz,x,y(Æ«º½¡¢¸©Ñö£¬¹ö×ª)
-% ±¸×¢£º¼ÓËÙ¶ÈÊı¾İÒÔgÎªµ¥Î»£¬²»ÊÇÒÔm/s2Îªµ¥Î»
+% æ—‹è½¬é¡ºåºï¼šz,x,y(åèˆªã€ä¿¯ä»°ï¼Œæ»šè½¬)
+% å¤‡æ³¨ï¼šåŠ é€Ÿåº¦æ•°æ®ä»¥gä¸ºå•ä½ï¼Œä¸æ˜¯ä»¥m/s2ä¸ºå•ä½
 clc;
 clear;
 close all;  
@@ -11,7 +11,7 @@ addpath('utils');
 addpath('datasets');
 rad2deg = 180/pi;   
 deg2rad = pi/180;   
-%% ¶ÁÈ¡Êı¾İ
+%% è¯»å–æ•°æ®
 filename = 'ADIS16465-rm3100-2020-01-11-18-57-yaw90.txt';
 nav_data = load(filename);
 gap=1;
@@ -19,8 +19,8 @@ data_num=round(size(nav_data,1));
 j=0;
 for i=1:gap:data_num-gap
     j=j+1;
-    DATA_CNTR(j,1) = mean(nav_data(i:i+gap-1,1)); %È¡Öµ·¶Î§£º0-65535
-    X_ACCL(j,1) = mean(nav_data(i:i+gap-1,2));    %µ¥Î»:g
+    DATA_CNTR(j,1) = mean(nav_data(i:i+gap-1,1)); %å–å€¼èŒƒå›´ï¼š0-65535
+    X_ACCL(j,1) = mean(nav_data(i:i+gap-1,2));    %å•ä½:g
     Y_ACCL(j,1) = mean(nav_data(i:i+gap-1,3));
     Z_ACCL(j,1) = mean(nav_data(i:i+gap-1,4));
     X_GYRO(j,1) = mean(nav_data(i:i+gap-1,5))/4;
@@ -30,17 +30,17 @@ for i=1:gap:data_num-gap
     X_MAG(j,1) = mean(nav_data(i:i+gap-1,9));
     Y_MAG(j,1) = mean(nav_data(i:i+gap-1,10));
     Z_MAG(j,1) = mean(nav_data(i:i+gap-1,11));
-    GAP_TIME(j,1) = mean(nav_data(i:i+gap-1,12))/1000000;  %µ¥Î»£ºus
+    GAP_TIME(j,1) = mean(nav_data(i:i+gap-1,12))/1000000;  %å•ä½ï¼šus
 end
 
-%% ³õÊ¼»¯Êı¾İ
+%% åˆå§‹åŒ–æ•°æ®
 L = size(DATA_CNTR,1);
 Time=zeros(L,1);
 Time(1,1)=0;
 
 acc = [X_ACCL,Y_ACCL,Z_ACCL];
 gyro_bias = [0,0,0];  
-gyro = [(X_GYRO+gyro_bias(1))*deg2rad,(Y_GYRO+gyro_bias(2))*deg2rad,(Z_GYRO+gyro_bias(3))*deg2rad]; % gyro µ¥Î»£ºdeg/sec
+gyro = [(X_GYRO+gyro_bias(1))*deg2rad,(Y_GYRO+gyro_bias(2))*deg2rad,(Z_GYRO+gyro_bias(3))*deg2rad]; % gyro å•ä½ï¼šdeg/sec
 mag = [X_MAG,Y_MAG,Z_MAG];       
 
 wn_var  = 1e-6 * ones(1,4);               
@@ -49,7 +49,7 @@ an_var  = 1e-1 * ones(1,3);
 Q = diag([wn_var, wbn_var]); 
 R = diag(an_var);         
 
-% EKFµİÍÆ(AHRS)
+% EKFé€’æ¨(AHRS)
 g = 9.87;
 acce_data0 = [X_ACCL(1),Y_ACCL(1),Z_ACCL(1)];
 mag_data0=[X_MAG(1),Y_MAG(1),Z_MAG(1)];
@@ -72,7 +72,7 @@ Pk = zeros(7,7,L);
 x(1,:) = [q0,q1,q2,q3,0,0,0];   
 Pk(:,:,1) = eye(7); 
 
-% ´Å³¡ÈÚºÏ²ÎÊı
+% ç£åœºèåˆå‚æ•°
 yaw_mag = zeros(L,1);
 yaw_mag(1,1) = yawEKF(1,1);
 z_bias = zeros(L,1);
@@ -80,7 +80,7 @@ P_mag = zeros(2,2,L);
 Q_mag = diag([1e-6,1e-8]);
 R_mag= 1e-3;
 x_mag = zeros(L,2); 
-%% ½âËã¹ı³Ì
+%% è§£ç®—è¿‡ç¨‹
 for k=1:L-1
     T = abs(GAP_TIME(k+1,1));
     Time(k+1,1)=Time(k)+T; 
@@ -145,7 +145,7 @@ for k=1:L-1
 
     Kk = Pk_ * Hk' * ((Hk * Pk_ * Hk' + R)^(-1));  
     x(k+1,:) = (x_' + Kk * (z(k,:) - hk)')';      
-    % Æ«º½½Ç²»¿ÉĞĞ¡£¡£¡£
+    % åèˆªè§’ä¸å¯è¡Œã€‚ã€‚ã€‚
     %x(k+1, 4) = 0;
     x(k+1,1:4) = x(k+1,1:4)/norm(x(k+1,1:4),2);  
     Pk(:,:,k+1) = (eye(7) - Kk*Hk) * Pk_;       
@@ -155,17 +155,17 @@ for k=1:L-1
    mag_data = mag(k,:);
 yawEKF(k,1) = Get_Yaw(pitchEKF(k,1),rollEKF(k,1),mag_data);
    
-   %¼ÓÈë´ÅÁ¦¼ÆµÄÈÚºÏËã·¨ 
+   %åŠ å…¥ç£åŠ›è®¡çš„èåˆç®—æ³• 
    A_2 = [1,-T;0,1];
    H_2 = [1,0];
-   %% ÍÓÂİÒÇÖ±½Ó»ı·Ö¸üĞÂ
+   %% é™€èºä»ªç›´æ¥ç§¯åˆ†æ›´æ–°
    yaw_mag(k+1,1) = CalEndAngle_Zcoord(yaw_mag(k,1),(gyro(k,3)-z_bias(k,1))*T );
    z_bias(k+1,1) = z_bias(k,1); 
-   % ÏÈÑé¹À¼Æ
+   % å…ˆéªŒä¼°è®¡
    x_mag(k+1,:) = [yaw_mag(k+1,1),z_bias(k+1,1)];
-   % ÏÈÑé¹À¼ÆÎó²îĞ­·½²î
+   % å…ˆéªŒä¼°è®¡è¯¯å·®åæ–¹å·®
    P_22 = A_2 * P_mag(:,:,k) * A_2' + Q_mag; 
-   % ÏÈĞı×ªµ½Æ½Ãæ×ø±ê£¬ÔÚÏñÇó³õÊ¼×ËÌ¬Ò»Ñù£¬Ö±½ÓÇó½âÆ«º½½Ç
+   % å…ˆæ—‹è½¬åˆ°å¹³é¢åæ ‡ï¼Œåœ¨åƒæ±‚åˆå§‹å§¿æ€ä¸€æ ·ï¼Œç›´æ¥æ±‚è§£åèˆªè§’
    z_2(k+1,1) = Get_Yaw(pitchEKF(k,1),rollEKF(k,1),mag_data); 
    
    K_2 = P_22 * H_2' * ((H_2 * P_22 * H_2' + R_mag)^(-1));            
@@ -181,7 +181,7 @@ yawEKF(k,1) = Get_Yaw(pitchEKF(k,1),rollEKF(k,1),mag_data);
    
 end
 
-%% »­Í¼
+%% ç”»å›¾
 end_num = min([size(Time,1),size(pitchEKF,1),size(yaw_mag,1)]);
 gap_plot = 1;
 
@@ -204,7 +204,7 @@ yaw_gyro_plot = plot(Time(1:gap_plot:end_num),yaw_gyro(1:gap_plot:end_num),'r-',
 hold on;
 yaw_mag_plot = plot(Time(1:gap_plot:end_num),yawEKF(1:gap_plot:end_num),'g-','LineWidth',2);
 hold on;
-% ¿¨¶ûÂü¶ş´ÎÂË²¨ºóµÄyaw
+% å¡å°”æ›¼äºŒæ¬¡æ»¤æ³¢åçš„yaw
 new_yaw_plot = plot(Time(1:gap_plot:end_num),yaw_mag(1:gap_plot:end_num),'b-','LineWidth',2);
 legend([yaw_gyro_plot,yaw_mag_plot,new_yaw_plot],{'yaw-gyro-plot','yaw-mag-plot','new-yaw-plot'},'FontSize',10);
 xlabel('t / s','FontSize',20)
